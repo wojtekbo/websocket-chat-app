@@ -5,7 +5,16 @@ const addMessageForm = document.querySelector('#add-messages-form');
 const userNameInput = document.querySelector('#username');
 const messageContentInput = document.querySelector('#message-content');
 
-let userName = 'Jan';
+//config
+const chatbotName = 'ChatBot';
+let userName = '';
+
+const socket = io();
+
+// nasluchiwacze
+socket.on('message', ({author, content}) => addMessage(author, content));
+socket.on('newUserLogged', userName => addMessage(chatbotName, userName + ' has joined the conversation!'));
+socket.on('userLoggedOut', userName => addMessage(chatbotName, userName + ' has left the conversation!'));
 
 const login = e => {
   e.preventDefault();
@@ -15,6 +24,7 @@ const login = e => {
     userName = userNameInput.value;
     loginForm.classList.remove('show');
     messagesSection.classList.add('show');
+    socket.emit('logged', userName);
   }
 };
 
@@ -23,6 +33,7 @@ const addMessage = (author, content) => {
   message.classList.add('message');
   message.classList.add('message--received');
   author === userName && message.classList.add('message--self');
+  author === chatbotName && message.classList.add('message--bot');
   message.innerHTML = `
   <h3 class="message__author">${userName === author ? 'You' : author}</h3>
   <div class="message__content">${content}</div>`;
@@ -31,10 +42,12 @@ const addMessage = (author, content) => {
 
 const sendMessage = e => {
   e.preventDefault();
-  if (!messageContentInput.value) {
+  let messageContent = messageContentInput.value;
+  if (!messageContent.length) {
     alert("Message can't be empty");
   } else {
-    addMessage(userName, messageContentInput.value);
+    addMessage(userName, messageContent);
+    socket.emit('message', {author: userName, content: messageContent});
     messageContentInput.value = '';
   }
 };

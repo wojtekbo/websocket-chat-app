@@ -104,6 +104,12 @@ p {
   background: #3498db;
 }
 
+.message--bot .message__content {
+  background: #23a26b;
+  font-style: italic;
+  color: rgb(198, 198, 198);
+}
+
 .show {
   display: block;
 }
